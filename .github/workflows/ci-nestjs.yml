@@ -1,0 +1,113 @@
+name: CI NestJS
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - staging
+  pull_request:
+    branches:
+      - main
+      - develop
+      - staging
+
+jobs:
+  build_dev:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          npm install
+
+      - name: Run tests
+        run: |
+          cd backend
+          npm run test
+
+      - name: Build for Development
+        run: |
+          cd backend
+          cp .env.development .env
+          npm run build
+
+      - name: Deploy to AWS (Dev)
+        run: |
+          cd backend
+          aws deploy --application-name my-nestjs-app-dev --region us-west-2
+
+  build_staging:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/staging'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          npm install
+
+      - name: Run tests
+        run: |
+          cd backend
+          npm run test
+
+      - name: Build for Staging
+        run: |
+          cd backend
+          cp .env.staging .env
+          npm run build
+
+      - name: Deploy to AWS (Staging)
+        run: |
+          cd backend
+          aws deploy --application-name my-nestjs-app-stg --region us-west-2
+
+  build_prod:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          npm install
+
+      - name: Run tests
+        run: |
+          cd backend
+          npm run test
+
+      - name: Build for Production
+        run: |
+          cd backend
+          cp .env.production .env
+          npm run build
+
+      - name: Deploy to AWS (Production)
+        run: |
+          cd backend
+          aws deploy --application-name my-nestjs-app-prod --region us-west-2
